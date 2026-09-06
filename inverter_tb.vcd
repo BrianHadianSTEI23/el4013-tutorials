@@ -1,0 +1,31 @@
+$date
+	Sun Sep  6 20:04:40 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module inverter_tb $end
+$var wire 32 ! b [31:0] $end
+$var reg 32 " a [31:0] $end
+$scope module G1 $end
+$var wire 32 # a [31:0] $end
+$var wire 32 $ b [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b11111111111111111111111111111111 $
+b0 #
+b0 "
+b11111111111111111111111111111111 !
+$end
+#10
+b11111111111111111111111111111110 !
+b11111111111111111111111111111110 $
+b1 "
+b1 #
+#20

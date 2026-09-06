@@ -1,0 +1,43 @@
+$date
+	Sun Sep  6 20:00:41 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module or_tb $end
+$var wire 32 ! c [31:0] $end
+$var reg 32 " a [31:0] $end
+$var reg 32 # b [31:0] $end
+$scope module G1 $end
+$var wire 32 $ a [31:0] $end
+$var wire 32 % b [31:0] $end
+$var wire 32 & c [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b0 &
+b0 %
+b0 $
+b0 #
+b0 "
+b0 !
+$end
+#10
+b1 !
+b1 &
+b1 #
+b1 %
+#20
+b0 #
+b0 %
+b1 "
+b1 $
+#30
+b1 #
+b1 %
+#40

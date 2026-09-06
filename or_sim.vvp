@@ -1,0 +1,59 @@
+#! /usr/bin/vvp
+:ivl_version "11.0 (stable)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/system.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_sys.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_textio.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/v2005_math.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/va_math.vpi";
+S_0x5cd9ae4f0760 .scope module, "or_tb" "or_tb" 2 3;
+ .timescale 0 0;
+P_0x5cd9ae4db910 .param/l "NInp" 0 2 5, +C4<00000000000000000000000000100000>;
+P_0x5cd9ae4db950 .param/l "NOut" 0 2 6, +C4<00000000000000000000000000100000>;
+v0x5cd9ae503150_0 .var "a", 31 0;
+v0x5cd9ae503240_0 .var "b", 31 0;
+v0x5cd9ae503310_0 .net "c", 31 0, L_0x5cd9ae503410;  1 drivers
+S_0x5cd9ae4f09c0 .scope module, "G1" "or_gate" 2 15, 3 1 0, S_0x5cd9ae4f0760;
+ .timescale 0 0;
+    .port_info 0 /INPUT 32 "a";
+    .port_info 1 /INPUT 32 "b";
+    .port_info 2 /OUTPUT 32 "c";
+P_0x5cd9ae4ddc00 .param/l "NInp" 0 3 2, +C4<00000000000000000000000000100000>;
+P_0x5cd9ae4ddc40 .param/l "NOut" 0 3 2, +C4<00000000000000000000000000100000>;
+L_0x5cd9ae503410 .functor OR 32, v0x5cd9ae503150_0, v0x5cd9ae503240_0, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>;
+v0x5cd9ae4f0e90_0 .net "a", 31 0, v0x5cd9ae503150_0;  1 drivers
+v0x5cd9ae502f00_0 .net "b", 31 0, v0x5cd9ae503240_0;  1 drivers
+v0x5cd9ae502fe0_0 .net "c", 31 0, L_0x5cd9ae503410;  alias, 1 drivers
+    .scope S_0x5cd9ae4f0760;
+T_0 ;
+    %vpi_call 2 23 "$dumpfile", "or_tb.vcd" {0 0 0};
+    %vpi_call 2 24 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x5cd9ae4f0760 {0 0 0};
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v0x5cd9ae503150_0, 0, 32;
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v0x5cd9ae503240_0, 0, 32;
+    %delay 10, 0;
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v0x5cd9ae503150_0, 0, 32;
+    %pushi/vec4 1, 0, 32;
+    %store/vec4 v0x5cd9ae503240_0, 0, 32;
+    %delay 10, 0;
+    %pushi/vec4 1, 0, 32;
+    %store/vec4 v0x5cd9ae503150_0, 0, 32;
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v0x5cd9ae503240_0, 0, 32;
+    %delay 10, 0;
+    %pushi/vec4 1, 0, 32;
+    %store/vec4 v0x5cd9ae503150_0, 0, 32;
+    %pushi/vec4 1, 0, 32;
+    %store/vec4 v0x5cd9ae503240_0, 0, 32;
+    %delay 10, 0;
+    %end;
+    .thread T_0;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "or_tb.v";
+    "./or_gate.v";
