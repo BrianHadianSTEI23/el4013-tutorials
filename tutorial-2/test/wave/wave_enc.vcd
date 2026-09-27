@@ -1,0 +1,56 @@
+$date
+	Sun Sep 27 21:56:58 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module tb_priority_encoder $end
+$var wire 1 ! tb_valid $end
+$var wire 3 " tb_out [2:0] $end
+$var reg 8 # tb_in [7:0] $end
+$scope module uut $end
+$var wire 8 $ in [7:0] $end
+$var wire 1 ! valid $end
+$var reg 3 % out [2:0] $end
+$var integer 32 & i [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b1000 &
+b0 %
+b0 $
+b0 #
+b0 "
+0!
+$end
+#10000
+b10 "
+b10 %
+b1000 &
+1!
+b100 #
+b100 $
+#20000
+b1000 &
+b110 "
+b110 %
+b1001001 #
+b1001001 $
+#30000
+b1000 &
+b111 "
+b111 %
+b10000000 #
+b10000000 $
+#40000
+b1000 &
+b111 "
+b111 %
+b11111111 #
+b11111111 $
+#50000

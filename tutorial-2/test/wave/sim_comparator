@@ -1,0 +1,74 @@
+#! /usr/bin/vvp
+:ivl_version "11.0 (stable)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision - 12;
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/system.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_sys.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_textio.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/v2005_math.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/va_math.vpi";
+S_0x570719ad29e0 .scope module, "tb_bit_4_mag_comparator" "tb_bit_4_mag_comparator" 2 3;
+ .timescale -9 -12;
+v0x570719ae6770_0 .var "A", 3 0;
+v0x570719ae6850_0 .var "B", 3 0;
+v0x570719ae68f0_0 .net "eq", 0 0, L_0x570719ae6e30;  1 drivers
+v0x570719ae69f0_0 .net "gt", 0 0, L_0x570719ae6bb0;  1 drivers
+v0x570719ae6ac0_0 .net "lt", 0 0, L_0x570719ae6d40;  1 drivers
+S_0x570719ad2b70 .scope module, "uut" "bit_4_mag_comparator" 2 7, 3 1 0, S_0x570719ad29e0;
+ .timescale 0 0;
+    .port_info 0 /INPUT 4 "A";
+    .port_info 1 /INPUT 4 "B";
+    .port_info 2 /OUTPUT 1 "gt";
+    .port_info 3 /OUTPUT 1 "lt";
+    .port_info 4 /OUTPUT 1 "eq";
+v0x570719ad2d50_0 .net "A", 3 0, v0x570719ae6770_0;  1 drivers
+v0x570719ae6380_0 .net "B", 3 0, v0x570719ae6850_0;  1 drivers
+v0x570719ae6460_0 .net "eq", 0 0, L_0x570719ae6e30;  alias, 1 drivers
+v0x570719ae6500_0 .net "gt", 0 0, L_0x570719ae6bb0;  alias, 1 drivers
+v0x570719ae65c0_0 .net "lt", 0 0, L_0x570719ae6d40;  alias, 1 drivers
+L_0x570719ae6bb0 .cmp/gt 4, v0x570719ae6770_0, v0x570719ae6850_0;
+L_0x570719ae6d40 .cmp/gt 4, v0x570719ae6850_0, v0x570719ae6770_0;
+L_0x570719ae6e30 .cmp/eq 4, v0x570719ae6770_0, v0x570719ae6850_0;
+    .scope S_0x570719ad29e0;
+T_0 ;
+    %vpi_call 2 12 "$dumpfile", "wave_comparator.vcd" {0 0 0};
+    %vpi_call 2 13 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x570719ad29e0 {0 0 0};
+    %pushi/vec4 0, 0, 4;
+    %store/vec4 v0x570719ae6770_0, 0, 4;
+    %pushi/vec4 0, 0, 4;
+    %store/vec4 v0x570719ae6850_0, 0, 4;
+    %delay 10000, 0;
+    %pushi/vec4 15, 0, 4;
+    %store/vec4 v0x570719ae6770_0, 0, 4;
+    %pushi/vec4 0, 0, 4;
+    %store/vec4 v0x570719ae6850_0, 0, 4;
+    %delay 10000, 0;
+    %pushi/vec4 0, 0, 4;
+    %store/vec4 v0x570719ae6770_0, 0, 4;
+    %pushi/vec4 15, 0, 4;
+    %store/vec4 v0x570719ae6850_0, 0, 4;
+    %delay 10000, 0;
+    %pushi/vec4 7, 0, 4;
+    %store/vec4 v0x570719ae6770_0, 0, 4;
+    %pushi/vec4 3, 0, 4;
+    %store/vec4 v0x570719ae6850_0, 0, 4;
+    %delay 10000, 0;
+    %pushi/vec4 4, 0, 4;
+    %store/vec4 v0x570719ae6770_0, 0, 4;
+    %pushi/vec4 9, 0, 4;
+    %store/vec4 v0x570719ae6850_0, 0, 4;
+    %delay 10000, 0;
+    %pushi/vec4 12, 0, 4;
+    %store/vec4 v0x570719ae6770_0, 0, 4;
+    %pushi/vec4 12, 0, 4;
+    %store/vec4 v0x570719ae6850_0, 0, 4;
+    %delay 10000, 0;
+    %vpi_call 2 22 "$finish" {0 0 0};
+    %end;
+    .thread T_0;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "test/tb/tb_bit_4_mag_comparator.v";
+    "src/bit_4_mag_comparator.v";

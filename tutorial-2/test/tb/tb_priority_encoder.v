@@ -18,6 +18,9 @@ module tb_priority_encoder;
     );
 
     initial begin
+        $dumpfile("wave_enc.vcd");
+        $dumpvars(0, tb_priority_encoder);
+
         $display("Time\t Input (Bin)\t Valid\t Encoded Output (Dec)");
         $monitor("%0t\t %b\t %b\t %d", $time, tb_in, tb_valid, tb_out);
 

@@ -1,68 +1,49 @@
-module alu
-(
-    input wire [3 : 0] op,
-    input wire [3 : 0] A,
-    input wire [3 : 0] B,
-
-    output wire zero, 
-    output wire negative, 
-    output wire overflow, 
-    output wire carry, 
+module alu (
+    input  wire [2:0] op,
+    input  wire [7:0] A,
+    input  wire [7:0] B,
+    output reg  [7:0] Y,
+    output wire       zero,
+    output wire       negative,
+    output wire       overflow,
+    output wire       carry
 );
-    wire q [4 : 0];
+    reg [8:0] sum_ext;
 
-    zero = 1'b0;
-    negative = 1'b0;
-    overflow = 1'b0;
-    carry = 1'b0;
+    assign zero     = (Y == 8'h00);
+    assign negative = Y[7];
+    assign carry    = (op == 3'b000 || op == 3'b001) ? sum_ext[8] : 1'b0;
+    
+    // Signed overflow for ADD and SUB
+    assign overflow = (op == 3'b000) ? (~(A[7] ^ B[7]) & (A[7] ^ Y[7])) :
+                      (op == 3'b001) ? ((A[7] ^ B[7])  & (A[7] ^ Y[7])) : 1'b0;
 
     always @(*) begin
+        sum_ext = 9'b0;
         case (op)
-            3'b000   : begin
-                q = A + B; 
-                if (q > 16) begin
-                    overflow = 1'b1;
-                    carry = 1'b1;
-                end 
-                else if (q == 0) begin
-                    zero = 1'b1;
-                end
-            end 
-            3'b001   : begin
-                q = A - B; 
-                if (q < 0) begin
-                    overflow = 1'b1;
-                    negative = 1'b1;
-                end 
-                else if (q == 0) begin
-                    zero = 1'b1;
-                end
+            3'b000: begin
+                sum_ext = A + B;
+                Y       = sum_ext[7:0];
             end
-            3'b010   : begin
-                q = A and B; 
-                if (q == 0) begin
-                    zero = 1'b1;
-                end
+            3'b001: begin
+                sum_ext = A - B;
+                Y       = sum_ext[7:0];
             end
-            3'b011   : begin
-                q = A or B; 
-                if (q == 0) begin
-                    zero = 1'b1;
-                end
+            3'b010: begin 
+                Y       = A & B;
             end
-            3'b100   : begin
-                q = A xor B; 
-                if (q == 0) begin
-                    zero = 1'b1;
-                end
+            3'b011: begin 
+                Y       = A | B;
             end
-            default  : begin
-                q = 3'b000;
-                if (q == 0) begin
-                    zero = 1'b1;
-                end
+            3'b100: begin 
+                Y       = A ^ B;
+            end
+            3'b101: begin 
+                Y       = ($signed(A) < $signed(B)) ? 8'h01 : 8'h00;
+            end
+            default: begin
+                Y       = 8'h00;
             end
         endcase
     end
-
 endmodule

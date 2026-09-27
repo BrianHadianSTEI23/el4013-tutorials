@@ -1,0 +1,101 @@
+$date
+	Sun Sep 27 21:51:55 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module tb_mux8to1 $end
+$var wire 1 ! q $end
+$var reg 8 " d [7:0] $end
+$var reg 1 # en_n $end
+$var reg 3 $ sel [2:0] $end
+$var integer 32 % i [31:0] $end
+$scope module uut $end
+$var wire 8 & d [7:0] $end
+$var wire 1 # en_n $end
+$var wire 3 ' sel [2:0] $end
+$var reg 1 ! q $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b0 '
+b10100110 &
+b0 %
+b0 $
+1#
+b10100110 "
+0!
+$end
+#10000
+b1 $
+b1 '
+b1 %
+#20000
+b10 $
+b10 '
+b10 %
+#30000
+b11 $
+b11 '
+b11 %
+#40000
+b100 $
+b100 '
+b100 %
+#50000
+b101 $
+b101 '
+b101 %
+#60000
+b110 $
+b110 '
+b110 %
+#70000
+b111 $
+b111 '
+b111 %
+#80000
+b0 $
+b0 '
+0#
+b0 %
+#90000
+1!
+b1 $
+b1 '
+b1 %
+#100000
+b10 $
+b10 '
+b10 %
+#110000
+0!
+b11 $
+b11 '
+b11 %
+#120000
+b100 $
+b100 '
+b100 %
+#130000
+1!
+b101 $
+b101 '
+b101 %
+#140000
+0!
+b110 $
+b110 '
+b110 %
+#150000
+1!
+b111 $
+b111 '
+b111 %
+#160000
+b1000 %
