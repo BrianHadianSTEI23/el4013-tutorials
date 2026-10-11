@@ -1,0 +1,61 @@
+stateDiagram-v2
+    direction TB
+
+    [*] --> IDLE
+
+    state IDLE {
+        [*] --> Idle_Wait
+        Idle_Wait : out_valid = 0
+        Idle_Wait : done = 0
+        Idle_Wait : acc_clr = 1
+        Idle_Wait : Reset internal counters (x_cnt, k_cnt, i, j, m, n)
+    }
+
+    IDLE --> LOAD : start == 1
+    IDLE --> IDLE : start == 0
+
+    state LOAD {
+        [*] --> Load_Buffers
+        Load_Buffers : load_x_en = in_valid
+        Load_Buffers : load_k_en = in_valid
+        Load_Buffers : Increment x_cnt (0..24) when in_valid
+        Load_Buffers : Increment k_cnt (0..8) when in_valid
+    }
+
+    LOAD --> COMPUTE_MAC : in_valid == 1 AND x_cnt == 24
+    LOAD --> LOAD : in_valid == 0 OR x_cnt < 24
+
+    state COMPUTE_MAC {
+        [*] --> Exec_MAC
+        Exec_MAC : acc_clr = (mac_cycle == 0)
+        Exec_MAC : acc_ld = 1
+        Exec_MAC : Calculate x_addr = 5*(i+m) + (j+n)
+        Exec_MAC : Calculate k_addr = 3*m + n
+        Exec_MAC : MAC: acc <= acc + (X[x_addr] * K[k_addr])
+        Exec_MAC : Increment kernel loop indices (m, n)
+        Exec_MAC : Increment mac_cycle (0..8)
+    }
+
+    COMPUTE_MAC --> WRITE_OUT : mac_cycle == 8
+    COMPUTE_MAC --> COMPUTE_MAC : mac_cycle < 8
+
+    state WRITE_OUT {
+        [*] --> Strobe_Output
+        Strobe_Output : out_valid = 1
+        Strobe_Output : data_Y <= acc
+        Strobe_Output : Increment pixel_cnt (0..8)
+        Strobe_Output : Update pixel indices (i, j)
+        Strobe_Output : Reset kernel loop indices (m=0, n=0)
+    }
+
+    WRITE_OUT --> COMPUTE_MAC : pixel_cnt < 8
+    WRITE_OUT --> DONE : pixel_cnt == 8
+
+    state DONE {
+        [*] --> Signal_Done
+        Signal_Done : done = 1
+        Signal_Done : out_valid = 0
+    }
+
+    DONE --> IDLE : start == 0
+    DONE --> DONE : start == 1

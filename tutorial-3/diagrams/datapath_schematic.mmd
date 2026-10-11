@@ -1,0 +1,142 @@
+flowchart TB
+    subgraph CLK_RST["Clock & Reset"]
+        clk["clk"]
+        rst_n["rst_n"]
+    end
+
+    subgraph INPUTS["Input Interface"]
+        sig_start["start"]
+        sig_in_valid["in_valid"]
+        sig_data_X["data_X[7:0]"]   
+        sig_data_K["data_K[7:0]"]
+    end
+
+    subgraph CTRL["Control Unit (FSM)"]
+        state_reg["state[2:0]"]
+        next_state["Next State Logic"]
+        x_count["x_count[4:0]"]
+        k_count["k_count[3:0]"]
+        mac_cycle["mac_cycle[3:0]"]
+        pixel_count["pixel_count[3:0]"]
+        i_reg["i[1:0]"]
+        j_reg["j[1:0]"]
+        m_reg["m[1:0]"]
+        n_reg["n[1:0]"]
+        ctrl_load_x["load_x_en"]
+        ctrl_load_k["load_k_en"]
+        ctrl_acc_clr["acc_clr"]
+        ctrl_acc_ld["acc_ld"]
+        ctrl_out_valid["out_valid"]
+        ctrl_done["done"]
+    end
+
+    subgraph DP["Datapath"]
+        subgraph XBUF["X Register File"]
+            x_regs["25x 8-bit Unsigned Registers<br/>(X[0] .. X[24])"]:::reg
+        end
+        
+        subgraph KBUF["K Register File"]
+            k_regs["9x 8-bit Signed Registers<br/>(K[0] .. K[8])"]:::reg
+        end
+        
+        subgraph ADDR["Address Generation Logic"]
+            x_addr_mux["X Address Logic: 5*(i+m)+(j+n)"]:::addr
+            k_addr_mux["K Address Logic: 3*m+n"]:::addr
+        end
+        
+        subgraph OMUX["Operand Multiplexers"]
+            x_mux["X Mux 25:1 to 8u"]:::mux
+            k_mux["K Mux 9:1 to 8s"]:::mux
+        end
+        
+        subgraph MAC["MAC Unit (1x Sequential)"]
+            mult["Multiplier 8u x 8s to 16s"]:::alu
+            adder["Adder 20s + 16s to 20s"]:::alu
+            acc_reg["Accumulator 20-bit signed"]:::reg
+        end
+        
+        subgraph OUTREG["Output Register"]
+            y_reg["data_Y[19:0]"]:::reg
+        end
+    end
+
+    subgraph OUTPUTS["Output Interface"]
+        out_valid_o["out_valid"]
+        data_Y_o["data_Y[19:0]"]
+        done_o["done"]
+    end
+
+    %% Clock and Reset Distribution
+    clk --> CTRL
+    clk --> x_regs
+    clk --> k_regs
+    clk --> acc_reg
+    clk --> y_reg
+    
+    rst_n --> CTRL
+    rst_n --> x_regs
+    rst_n --> k_regs
+    rst_n --> acc_reg
+    rst_n --> y_reg
+
+    %% Input Connections
+    sig_start --> CTRL
+    sig_in_valid --> CTRL
+    sig_data_X --> x_regs
+    sig_data_K --> k_regs
+
+    %% Control Unit to Datapath Signals
+    ctrl_load_x -.->|load_x_en| x_regs
+    ctrl_load_k -.->|load_k_en| k_regs
+    x_count -.->|write index| x_regs
+    k_count -.->|write index| k_regs
+
+    i_reg -.->|i| x_addr_mux
+    j_reg -.->|j| x_addr_mux
+    m_reg -.->|m| x_addr_mux
+    n_reg -.->|n| x_addr_mux
+    
+    m_reg -.->|m| k_addr_mux
+    n_reg -.->|n| k_addr_mux
+
+    ctrl_acc_clr -.->|acc_clr| acc_reg
+    ctrl_acc_ld -.->|acc_ld| acc_reg
+
+    %% Address Generation to Operand Mux Selects
+    x_addr_mux -->|"x_addr[4:0]"| x_mux
+    k_addr_mux -->|"k_addr[3:0]"| k_mux
+
+    %% Datapath Data Flow
+    x_regs -->|25x8u| x_mux
+    k_regs -->|9x8s| k_mux
+
+    x_mux -->|8u| mult
+    k_mux -->|8s| mult
+
+    mult -->|16s product| adder
+    acc_reg -->|20s acc feedback| adder
+    adder -->|20s sum| acc_reg
+
+    acc_reg -->|20s result| y_reg
+
+    %% Output Interface Connections
+    ctrl_out_valid -.->|enable| y_reg
+    ctrl_out_valid -.-> out_valid_o
+    y_reg --> data_Y_o
+    ctrl_done -.-> done_o
+
+    classDef ctrl fill:#000000,stroke:#ffffff,stroke-width:2px,color:#ffffff;
+    classDef io fill:#000000,stroke:#ffffff,stroke-width:2px,color:#ffffff;
+    classDef mem fill:#000000,stroke:#ffffff,stroke-width:2px,color:#ffffff;
+    classDef alu fill:#000000,stroke:#ffffff,stroke-width:2px,color:#ffffff;
+    classDef addr fill:#000000,stroke:#ffffff,stroke-width:2px,color:#ffffff;
+    classDef mux fill:#000000,stroke:#ffffff,stroke-width:2px,color:#ffffff;
+    classDef reg fill:#000000,stroke:#ffffff,stroke-width:2px,color:#ffffff;
+    
+    class CLK_RST,CTRL ctrl;
+    class INPUTS,OUTPUTS io;
+    class XBUF,KBUF mem;
+    class MAC alu;
+    class ADDR addr;
+    class OMUX mux;
+    class x_regs,k_regs,acc_reg,y_reg reg;
