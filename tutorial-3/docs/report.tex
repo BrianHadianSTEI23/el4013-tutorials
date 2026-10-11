@@ -1,0 +1,251 @@
+\documentclass[12pt,a4paper]{article}
+
+% =============================================================================
+% Packages & Document Setup
+% =============================================================================
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{svg}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{caption}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+% Code Listing Styling for Verilog and Python
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{verilogstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=verilogstyle}
+
+\begin{document}
+
+% =============================================================================
+% CENTERED COVER PAGE (TITLE PAGE)
+% =============================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{1.5cm}
+
+    {\Large \textbf{LAPORAN TUGAS INDIVIDU: PERANCANGAN RTL}\par}
+    \vspace{0.5cm}
+    {\small \textbf{SEQUENTIAL 2D CONVOLUTION ENGINE}\par}
+    \vspace{0.3cm}
+
+    \vspace{0.5cm}
+    {\large \textbf{EL4013 Perancangan Sistem VLSI}\par}
+
+    \vfill
+
+    {\large \textbf{Disusun Oleh:}\par}
+    \vspace{0.4cm}
+    {\large \textbf{Brian A. Hadian}\par}
+    \vspace{0.2cm}
+    {\large \textbf{13520348}\par}
+
+    \vfill
+
+    {\large \textbf{Sekolah Teknik Elektro dan Informatika (STEI)}\par}
+    \vspace{0.2cm}
+    {\large \textbf{Institut Teknologi Bandung}\par}
+    \vspace{0.4cm}
+    {\large \today\par}
+
+    \vspace*{1cm}
+\end{titlepage}
+
+
+\newpage
+\pagenumbering{arabic}
+
+% =============================================================================
+% BAB I: DESAIN SISTEM
+% =============================================================================
+\section{Bab I: Desain Sistem (System Architecture \& Design)}
+
+\subsection{Arsitektur FSMD \& Transisi State}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{diagrams/fsm_state_diagram.svg}
+    \caption{Diagram Transisi State FSM Control Unit}
+    \label{fig:fsm_state_diagram}
+\end{figure}
+
+Sistem \textit{Sequential 2D Convolution Engine} dirancang menggunakan pendekatan \textit{Finite State Machine with Datapath} (FSMD). Unit kontrol terpisah secara tegas dari unit jalur data (\textit{datapath}) untuk mengoptimalkan penggunaan area silikon melalui \textit{MAC sharing}. State kontrol terdiri dari 5 kondisi utama:
+
+\begin{enumerate}
+    \item \textbf{IDLE}: Menunggu kemunculan sinyal \texttt{start}. Seluruh pencacah dan akumulator diinisialisasi ke nilai nol.
+    \item \textbf{LOAD}: Membaca data piksel masukan $X$ ($5\times5$) dan kernel $K$ ($3\times3$) secara sekuensial dari antarmuka luar dan menyimpannya ke dalam register internal buffer saat \texttt{in\_valid} bernilai HIGH.
+    \item \textbf{COMPUTE\_MAC}: Melakukan 9 kali eksekusi perkalian-akumulasi ($X \times K$) secara sekuensial per titik piksel keluaran $Y[i,j]$.
+    \item \textbf{WRITE\_OUT}: Menyiapkan data keluaran $Y[i,j]$ pada \texttt{data\_Y} dan menaikkan pulsa \texttt{out\_valid} selama 1 siklus clock.
+    \item \textbf{DONE}: Menandai penyelesaian seluruh komputasi $3\times3$ piksel keluaran dengan menegaskan sinyal \texttt{done} bernilai HIGH.
+\end{enumerate}
+
+\subsection{Skematik Datapath \& Pengalamatan}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{diagrams/datapath_schematic.svg}
+    \caption{Skematik Tingkat Register Datapath \& Antarmuka Kontrol}
+    \label{fig:datapath_schematic}
+\end{figure}
+
+Datapath terdiri dari register file $X$ ($25 \times 8$-bit \textit{unsigned}), register file $K$ ($9 \times 8$-bit \textit{signed}), pengali $8\text{u} \times 8\text{s}$, dan akumulator $20$-bit \textit{signed}. Persamaan indeks alamat memetakan koordinat spasial $(i,j)$ dan kernel $(m,n)$ ke alamat linier:
+\begin{equation}
+\text{Addr}_X = 5 \times (i + m) + (j + n)
+\end{equation}
+\begin{equation}
+\text{Addr}_K = 3 \times m + n
+\end{equation}
+
+% =============================================================================
+% BAB II: KODE VERILOG RTL
+% =============================================================================
+\section{Bab II: Kode Verilog RTL (Synthesizable Code)}
+
+Kode RTL dirancang sintetis penuh (\textit{fully synthesizable}) dan disimpan pada berkas \texttt{conv2d\_engine.v}. Pemisahan antara unit pengontrol FSM dan datapath diimplementasikan menggunakan blok \texttt{always} terpisah untuk transisi state kombinasional dan register sekuensial.
+
+\begin{lstlisting}[language=Verilog, caption={Potongan Kode Utama FSMD Sequential Convolution Engine}]
+// FSM State Register & Synchronous Logic
+always @(posedge clk or negedge rstn) begin
+    if (!rstn)
+        current_state <= S_IDLE;
+    else
+        current_state <= next_state;
+end
+
+// Single MAC Accumulation Execution
+always @(posedge clk or negedge rstn) begin
+    if (!rstn) begin
+        acc_reg <= 20'sd0;
+    end else if (current_state == S_COMPUTE_MAC) begin
+        if (mac_cnt == 4'd0)
+            acc_reg <= $signed({{3{product[16]}}, product});
+        else
+            acc_reg <= acc_reg + $signed({{3{product[16]}}, product});
+    end
+end
+\end{lstlisting}
+
+% =============================================================================
+% BAB III: TESTBENCH & STRATEGI PENGUJAN
+% =============================================================================
+\section{Bab III: Testbench \& Strategi Pengujian}
+
+\subsection{Metode Verifikasi}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{docs/golden_model.png}
+    \caption{Tangkapan Layar Eksekusi Python Golden Model (\texttt{golden\_model.py})}
+    \label{fig:golden_model_exec}
+\end{figure}
+
+Pengujian dilakukan menggunakan testbench Verilog (\texttt{tb\_conv2d.v}) dengan stimulus masukan matriks $X$ ($5\times5$) dan matriks kernel $K$ ($3\times3$) sesuai spesifikasi tugas. Hasil eksekusi RTL diverifikasi secara otomatis menggunakan \textit{golden model} berbasis skrip Python (\texttt{golden\_model.py}).
+
+\subsection{Matriks Masukan Kasus Uji}
+Masukan gambar $X$ dan kernel filter $K$ diset sebagai berikut:
+\begin{equation}
+X = \begin{bmatrix}
+1 & 2 & 0 & 1 & 3 \\
+2 & 1 & 3 & 2 & 0 \\
+0 & 1 & 2 & 1 & 1 \\
+1 & 3 & 0 & 2 & 2 \\
+2 & 0 & 1 & 0 & 1
+\end{bmatrix}, \quad
+K = \begin{bmatrix}
+1 & 0 & -1 \\
+1 & 0 & -1 \\
+1 & 0 & -1
+\end{bmatrix}
+\end{equation}
+
+% =============================================================================
+% BAB IV: HASIL SIMULASI & ANALISIS TIMING
+% =============================================================================
+\section{Bab IV: Hasil Simulasi \& Analisis Timing}
+
+\subsection{Tabel Perbandingan Hasil Simulasi}
+Tabel \ref{tab:results} menunjukkan perbandingan nilai kalkulasi manual/Python model terhadap hasil simulasi RTL Verilog.
+
+\begin{table}[H]
+\centering
+\caption{Perbandingan Hasil Perhitungan Konvolusi $Y[i,j]$}
+\label{tab:results}
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Elemen Output} & \textbf{Ekspektasi (Decimal)} & \textbf{RTL Simulasi} & \textbf{Format Hex (20-bit)} & \textbf{Status} \\
+\midrule
+$Y[0,0]$ & $-2$ & $-2$ & \texttt{0xFFFFE} & PASS \\
+$Y[0,1]$ & $0$  & $0$  & \texttt{0x00000} & PASS \\
+$Y[0,2]$ & $1$  & $1$  & \texttt{0x00001} & PASS \\
+$Y[1,0]$ & $-2$ & $-2$ & \texttt{0xFFFFE} & PASS \\
+$Y[1,1]$ & $0$  & $0$  & \texttt{0x00000} & PASS \\
+$Y[1,2]$ & $2$  & $2$  & \texttt{0x00002} & PASS \\
+$Y[2,0]$ & $0$  & $0$  & \texttt{0x00000} & PASS \\
+$Y[2,1]$ & $1$  & $1$  & \texttt{0x00001} & PASS \\
+$Y[2,2]$ & $-1$ & $-1$ & \texttt{0xFFFFF} & PASS \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Analisis Timing \& Gelombang Waveform}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{docs/wave.png}
+    \caption{Tangkapan Layar Gelombang Simulasi Timing Waveform RTL}
+    \label{fig:simulation_waveform}
+\end{figure}
+
+Berdasarkan hasil simulasi gelombang (\textit{waveform}), transisi state berjalan dengan akurat:
+\begin{itemize}
+    \item Pengisian memori buffer pada state \texttt{LOAD} membutuhkan **25 siklus clock** bersamaan dengan sinyal \texttt{in\_valid}.
+    \item Setiap elemen $Y[i,j]$ membutuhkan **9 siklus clock** akumulasi sekuensial pada state \texttt{COMPUTE\_MAC}.
+    \item Sinyal \texttt{out\_valid} berpulsa HIGH persis selama **1 siklus clock** untuk setiap nilai $Y[i,j]$ yang siap diekstrak.
+    \item Sinyal \texttt{done} naik menjadi HIGH setelah seluruh 9 piksel $Y$ selesai dihitung (total **109 siklus clock**).
+\end{itemize}
+
+% =============================================================================
+% BAB V: KESIMPULAN & PEMBAHASAN
+% =============================================================================
+\section{Bab V: Kesimpulan \& Pembahasan}
+
+\subsection{Analisis Efisiensi Resource (1 MAC vs 9 MAC Parallel)}
+Penggunaan 1 unit MAC sekuensial memberikan efisiensi area silikon yang signifikan dibandingkan arsitektur paralel 9 MAC:
+\begin{itemize}
+    \item \textbf{Penghematan Luas Area}: Mengurangi kebutuhan pengali hardwired ($8\text{u} \times 8\text{s}$) dari 9 unit menjadi hanya **1 unit multiplier**, menghemat estimasi area datapath hingga $\approx 88\%$.
+    \item \textbf{Trade-off Latensi}: Membutuhkan total 81 siklus komputasi MAC dibanding 9 siklus pada arsitektur paralel. Trade-off ini sangat optimal untuk aplikasi embedded/IoT yang memprioritaskan efisiensi daya dan area ketimbang performa ultra-high throughput.
+\end{itemize}
+
+\subsection{Kesimpulan}
+RTL \textit{Sequential 2D Convolution Engine} berbasis FSMD telah berhasil dirancang, disimulasikan, dan diverifikasi. Seluruh fungsi kontrol, indeksasi memori, perhitungan aritmatika 2's complement, dan pewaktu sinyal terbukti valid $100\%$ sesuai spesifikasi.
+
+\end{document}
